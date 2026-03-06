@@ -1,69 +1,75 @@
-import "https://cdn.cubing.net/js/cubing/twisty";
-
 const cube = document.getElementById("cube");
 const mixBtn = document.getElementById("mixBtn");
 const solveBtn = document.getElementById("solveBtn");
 const statusEl = document.getElementById("status");
 
-const MOVES = ["U", "D", "L", "R", "F", "B"];
-const SUFFIX = ["", "'", "2"];
 const MOVE_MS = 500;
+const faces = [
+  ["front", "#22c55e"],
+  ["back", "#3b82f6"],
+  ["right", "#ef4444"],
+  ["left", "#f97316"],
+  ["top", "#f8fafc"],
+  ["bottom", "#facc15"],
+];
 
-let scrambleMoves = [];
+const moves = [
+  { axis: "x", amount: 90 },
+  { axis: "x", amount: -90 },
+  { axis: "y", amount: 90 },
+  { axis: "y", amount: -90 },
+  { axis: "z", amount: 90 },
+  { axis: "z", amount: -90 },
+];
+
+let rotation = { x: -24, y: -30, z: 0 };
+let scramble = [];
 let busy = false;
 
-function setBusy(v) {
-  busy = v;
-  mixBtn.disabled = v;
-  solveBtn.disabled = v || scrambleMoves.length === 0;
+function buildCube() {
+  faces.forEach(([name, color]) => {
+    const face = document.createElement("div");
+    face.className = `face ${name}`;
+
+    for (let i = 0; i < 9; i++) {
+      const sticker = document.createElement("div");
+      sticker.className = "sticker";
+      sticker.style.background = color;
+      face.appendChild(sticker);
+    }
+
+    cube.appendChild(face);
+  });
+}
+
+function applyRotation() {
+  cube.style.transform = `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) rotateZ(${rotation.z}deg)`;
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function randomInt(max) {
-  return Math.floor(Math.random() * max);
+function setBusy(v) {
+  busy = v;
+  mixBtn.disabled = v;
+  solveBtn.disabled = v || scramble.length === 0;
 }
 
-function generateScramble(length = 20) {
-  const out = [];
-  let prevFace = "";
-
-  while (out.length < length) {
-    const face = MOVES[randomInt(MOVES.length)];
-    if (face === prevFace) continue;
-    prevFace = face;
-    out.push(face + SUFFIX[randomInt(SUFFIX.length)]);
-  }
-
-  return out;
+function randomMove() {
+  return moves[Math.floor(Math.random() * moves.length)];
 }
 
 function inverseMove(move) {
-  if (move.endsWith("2")) return move;
-  if (move.endsWith("'")) return move.slice(0, -1);
-  return `${move}'`;
+  return { axis: move.axis, amount: -move.amount };
 }
 
-function inverseAlg(moves) {
-  return [...moves].reverse().map(inverseMove);
-}
-
-async function animateMoves(moves) {
-  for (const move of moves) {
-    cube.alg = move;
-    cube.play();
+async function runMoves(sequence) {
+  for (const move of sequence) {
+    rotation[move.axis] += move.amount;
+    applyRotation();
     await sleep(MOVE_MS);
   }
-}
-
-async function resetSolved() {
-  cube.experimentalSetupAlg = "";
-  cube.alg = "";
-  cube.pause();
-  cube.jumpToStart();
-  await sleep(30);
 }
 
 async function onMix() {
@@ -71,28 +77,31 @@ async function onMix() {
   setBusy(true);
   statusEl.textContent = "Mixing...";
 
-  await resetSolved();
-  scrambleMoves = generateScramble(20);
-  await animateMoves(scrambleMoves);
+  rotation = { x: -24, y: -30, z: 0 };
+  applyRotation();
+  await sleep(80);
+
+  scramble = Array.from({ length: 18 }, () => randomMove());
+  await runMoves(scramble);
 
   statusEl.textContent = "Mixed. Tap Solve to solve it.";
   setBusy(false);
 }
 
 async function onSolve() {
-  if (busy || scrambleMoves.length === 0) return;
+  if (busy || scramble.length === 0) return;
   setBusy(true);
   statusEl.textContent = "Solving...";
 
-  const solution = inverseAlg(scrambleMoves);
-  await animateMoves(solution);
+  const solution = [...scramble].reverse().map(inverseMove);
+  await runMoves(solution);
 
-  scrambleMoves = [];
+  scramble = [];
   statusEl.textContent = "Solved ✅";
   setBusy(false);
 }
 
+buildCube();
+applyRotation();
 mixBtn.addEventListener("click", onMix);
 solveBtn.addEventListener("click", onSolve);
-
-statusEl.textContent = "Ready (solved)";

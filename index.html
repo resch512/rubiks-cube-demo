@@ -11,15 +11,8 @@
   <main class="app">
     <h1>🧊 Rubik’s Cube Demo</h1>
 
-    <div class="cube-wrap">
-      <twisty-player
-        id="cube"
-        puzzle="3x3x3"
-        visualization="3D"
-        control-panel="none"
-        background="none"
-        hint-facelets="none"
-      ></twisty-player>
+    <div class="scene">
+      <div id="cube" class="cube" aria-label="3D Rubik's Cube"></div>
     </div>
 
     <div class="buttons">
@@ -30,6 +23,6 @@
     <p id="status" class="status">Ready (solved)</p>
   </main>
 
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
