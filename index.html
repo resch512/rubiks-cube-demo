@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Rubik’s Cube Demo</title>
+  <meta name="theme-color" content="#1d4ed8" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>🧊 Rubik’s Cube Demo</h1>
+
+    <div class="cube-wrap">
+      <twisty-player
+        id="cube"
+        puzzle="3x3x3"
+        visualization="3D"
+        control-panel="none"
+        background="none"
+        hint-facelets="none"
+      ></twisty-player>
+    </div>
+
+    <div class="buttons">
+      <button id="mixBtn" type="button">Mix</button>
+      <button id="solveBtn" type="button" disabled>Solve</button>
+    </div>
+
+    <p id="status" class="status">Ready (solved)</p>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
