@@ -1,4 +1,4 @@
-import "https://esm.sh/cubing/twisty";
+import "https://cdn.cubing.net/js/cubing/twisty";
 
 const cube = document.getElementById("cube");
 const mixBtn = document.getElementById("mixBtn");
